@@ -41,6 +41,7 @@ def runLikeHell(flaglist):
 			updateFlag(flag, "own")
 		
 def main():
+	print "hello."
 	flaglist=extractFlags("new")
 	print flaglist
 	runLikeHell(flaglist)		
