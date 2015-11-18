@@ -1,4 +1,4 @@
-from termcolor import colored
+from termcolor import colored, cprint
 import threading
 import telnetlib
 import time
@@ -15,14 +15,13 @@ SUBMIT_INTERVAL = 60 #time in seconds
 def updateFlag(flag, state):
     con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
     cur = con.cursor()
-    cur.execute('UPDATE flags SET state="%s" WHERE flag="%s";', % (state, flag))
+    cur.execute('UPDATE flags SET state="%s" WHERE flag="%s";' % (state, flag))
     con.commit()
     con.close()
 
 def extractFlags(state):
     con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
     cur = con.cursor()
-    #query = 'SELECT flag FROM flags WHERE state="%s";' % state
     cur.execute('SELECT flag FROM flags WHERE state="%s";' % state)
     results = cur.fetchall()
     flaglist = [val for sublist in results for val in sublist]
@@ -39,7 +38,7 @@ def submit_flags(flaglist):
     services_down = set()
     unknown_error = set()
 
-    print ('Submitting '+str(len(flaglist))+' Flags', 'green')
+    cprint ('Submitting '+str(len(flaglist))+' Flags', 'green')
 
     session = telnetlib.Telnet(FLAGSERVER, FLAG_PORT, 10)
     #invatigate welcome message!
@@ -81,36 +80,37 @@ def submit_flags(flaglist):
             unknown_error.add(answer)
 
     #print status message after each submission round
-    print (str(accepted)+' flags scored', 'green') 
+    cprint (str(accepted)+' flags scored', 'green') 
     
     if later > 0:
-        print (str(later)+' flags to resubmit', 'orange') 
+        cprint (str(later)+' flags to resubmit', 'yellow') 
     
     if too_old > 0:
-        print (str(too_old)+ 'flags are to old', 'orange') 
+        cprint (str(too_old)+ ' flags are too old', 'yellow') 
     
     if already_submitted > 0:
-        print (str(already_submitted)+' flags already submitted', 'orange')
+        cprint (str(already_submitted)+' flags already submitted', 'yellow')
     
     if own > 0:
-        print (str(own)+' flags are youre own', 'red') 
+        cprint (str(own)+' flags are youre own', 'red') 
 
     if no_such_flag > 0:
-        print (str(no_such_flag)+' no such flags', 'red')
+        cprint (str(no_such_flag)+' no such flags', 'red')
 
     for service in services_down:
-        print (service+'is down.', 'red')
+        cprint (service+'is down.', 'red')
 
     if len(unknown_error) > 0:
-        print ('Following unknown errors hace occoured:', 'red')
+        cprint ('Following unknown errors hace occoured:', 'red')
         for error in unknown_error:
-            print ('  '+error, 'red')
+            cprint ('  '+error, 'red')
     
     
 def submit():
     start = time.time()
     flaglist = extractFlags("new")
-    submit_flags(flaglist)		
+    submit_flags(flaglist)
+    print ""		
     end = time.time()
     if (end - start) < SUBMIT_INTERVAL:
         time.sleep(SUBMIT_INTERVAL - (end - start))
