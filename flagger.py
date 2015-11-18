@@ -11,22 +11,42 @@ DB_NAME = 'flagDB'
 FLAGSERVER = '127.0.0.1'
 FLAG_PORT = 9999
 SUBMIT_INTERVAL = 60 #time in seconds
+READ_TIMEOUT = 2 #timeout in sec to wati after flag submit
 
 def updateFlag(flag, state):
-    con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
-    cur = con.cursor()
-    cur.execute('UPDATE flags SET state="%s" WHERE flag="%s";' % (state, flag))
-    con.commit()
-    con.close()
+    try:
+        con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
+        cur = con.cursor()
+        cur.execute('UPDATE flags SET state="%s" WHERE flag="%s";' % (state, flag))
+        con.commit()
+        con.close()
+    except Exception as e:
+        cprint (e, 'red')
 
 def extractFlags(state):
-    con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
-    cur = con.cursor()
-    cur.execute('SELECT flag FROM flags WHERE state="%s";' % state)
-    results = cur.fetchall()
-    flaglist = [val for sublist in results for val in sublist]
-    con.close()
-    return flaglist
+    try:
+        con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
+        cur = con.cursor()
+        cur.execute('SELECT flag FROM flags WHERE state="%s";' % state)
+        results = cur.fetchall()
+        flaglist = [val for sublist in results for val in sublist]
+        con.close()
+        return flaglist
+    except Exception as e:
+        cprint (e, 'red')
+        return []
+
+def insertFlag(flag, service):
+    try:
+        con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
+        cur = con.cursor()
+        cur.execute('INSERT INTO flags (flag, state, service) VALUES ("%s", "%s", "new");'
+                % (flag, service))
+        con.commit()
+        con.close()
+    except Exception as e:
+        cprint (e, 'red')
+
 
 def submit_flags(flaglist):
     accepted = 0
@@ -35,6 +55,7 @@ def submit_flags(flaglist):
     already_submitted = 0
     later = 0
     no_such_flag = 0
+    timeout = 0
     services_down = set()
     unknown_error = set()
 
@@ -42,74 +63,87 @@ def submit_flags(flaglist):
 
     session = telnetlib.Telnet(FLAGSERVER, FLAG_PORT, 10)
     #invatigate welcome message!
-    answer = session.read_until("\n")	
+    answer = session.read_until("\n", READ_TIMEOUT)	
 
     for flag in flaglist:
-        session.write(flag)
-        answer = session.read_until("\n").strip()
+        try:
+            session.write(flag)
+            answer = session.read_until("\n", READ_TIMEOUT).strip()
 
-        if "Accepted" in answer:
-            accepted +=1
-            updateFlag(flag,"accepted")
+            if "Accepted" in answer:
+                accepted +=1
+                updateFlag(flag,"accepted")
+            
+            elif "too old" in answer:
+                too_old +=1
+                updateFlag(flag,"expired")
+            
+            elif "your own" in answer:
+                own +=1
+                updateFlag(flag, "own")
+            
+            elif "already submitted" in answer:
+                already_submitted +=1
+                updateFlag(flag, "already_submitted")
+            
+            elif "try again later" in answer:
+                later +=1
+            
+            elif "no such flag" in answer:
+                no_such_flag +=1
+                updateFlag(flag, "no_such_flag")
+
+            elif "your appropriate service" in answer:
+                #save service name to set
+                services_down.add(answer[33:-10])
+
+            elif answer == "":
+                timeout +=1
+
+            else:
+                updateFlag(flag, "unknown_error")
+                unknown_error.add(answer)
+
+        #print status message after each submission round
+        cprint (str(accepted)+' flags scored', 'green') 
         
-        elif "too old" in answer:
-            too_old +=1
-            updateFlag(flag,"expired")
+        if later > 0:
+            cprint (str(later)+' flags to resubmit', 'yellow') 
         
-        elif "your own" in answer:
-            own +=1
-            updateFlag(flag, "own")
+        if too_old > 0:
+            cprint (str(too_old)+ ' flags are too old', 'yellow') 
         
-        elif "already submitted" in answer:
-            already_submitted +=1
-            updateFlag(flag, "already_submitted")
+        if already_submitted > 0:
+            cprint (str(already_submitted)+' flags already submitted', 'yellow')
         
-        elif "try again later" in answer:
-            later +=1
-        
-        elif "no such flag" in answer:
-            no_such_flag +=1
-            updateFlag(flag, "no_such_flag")
+        if own > 0:
+            cprint (str(own)+' flags are youre own', 'red') 
 
-        elif "your appropriate service" in answer:
-            #save service name to set
-            services_down.add(answer[33:-10])
+        if no_such_flag > 0:
+            cprint (str(no_such_flag)+' no such flags', 'red')
 
-        else:
-            updateFlag(flag, "unknown_error")
-            unknown_error.add(answer)
+        if timeout > 0:
+            cprint (str(no_such_flag)+' timeout', 'red')
 
-    #print status message after each submission round
-    cprint (str(accepted)+' flags scored', 'green') 
-    
-    if later > 0:
-        cprint (str(later)+' flags to resubmit', 'yellow') 
-    
-    if too_old > 0:
-        cprint (str(too_old)+ ' flags are too old', 'yellow') 
-    
-    if already_submitted > 0:
-        cprint (str(already_submitted)+' flags already submitted', 'yellow')
-    
-    if own > 0:
-        cprint (str(own)+' flags are youre own', 'red') 
+        for service in services_down:
+            cprint (service+'is down.', 'red')
 
-    if no_such_flag > 0:
-        cprint (str(no_such_flag)+' no such flags', 'red')
+        if len(unknown_error) > 0:
+            cprint ('Following unknown errors hace occoured:', 'red')
+            for error in unknown_error:
+                cprint ('  '+error, 'red')
 
-    for service in services_down:
-        cprint (service+'is down.', 'red')
-
-    if len(unknown_error) > 0:
-        cprint ('Following unknown errors hace occoured:', 'red')
-        for error in unknown_error:
-            cprint ('  '+error, 'red')
+    except Exception as e:
+        cprint (e, 'red')
     
     
 def submit():
     start = time.time()
     flaglist = extractFlags("new")
-    submit_flags(flaglist)
+    if len(flaglist) > 0:
+        submit_flags(flaglist)
+    else:
+        cprint ('No flags to submit', 'green')
     print ""		
     end = time.time()
     if (end - start) < SUBMIT_INTERVAL:
