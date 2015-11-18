@@ -15,14 +15,15 @@ SUBMIT_INTERVAL = 60 #time in seconds
 def updateFlag(flag, state):
     con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
     cur = con.cursor()
-    cur.execute('UPDATE flags SET state="%s" WHERE flag="%s";', (state, flag))
+    cur.execute('UPDATE flags SET state="%s" WHERE flag="%s";', % (state, flag))
     con.commit()
     con.close()
 
 def extractFlags(state):
     con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
-    cur = con.cursor
-    cur.execute('SELECT flag FROM flags WHERE state="%s";', state)
+    cur = con.cursor()
+    #query = 'SELECT flag FROM flags WHERE state="%s";' % state
+    cur.execute('SELECT flag FROM flags WHERE state="%s";' % state)
     results = cur.fetchall()
     flaglist = [val for sublist in results for val in sublist]
     con.close()
