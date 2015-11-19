@@ -10,8 +10,8 @@ PASSWORD = 'toor'
 DB_NAME = 'flagDB'
 FLAGSERVER = '127.0.0.1'
 FLAG_PORT = 9999
-SUBMIT_INTERVAL = 60 #time in seconds
-READ_TIMEOUT = 2 #timeout in sec to wati after flag submit
+SUBMIT_INTERVAL = 60	#time in seconds
+READ_TIMEOUT = 2 	#timeout in sec to wait after flag submit
 
 def updateFlag(flag, state):
     try:
@@ -108,25 +108,25 @@ def submit_flags(flaglist):
             cprint (e, 'red')
 
     #print status message after each submission round
-    cprint (str(accepted)+' flags scored', 'green') 
+    cprint ('{} flags scored'.format(accepted), 'green')
         
     if later > 0:
-        cprint (str(later)+' flags to resubmit', 'yellow') 
+        cprint ('{} flags to resubmit'.format(later), 'yellow') 
         
     if too_old > 0:
-        cprint (str(too_old)+ ' flags are too old', 'yellow') 
+        cprint ('{} flags are too old'.format(too_old), 'yellow') 
         
     if already_submitted > 0:
-        cprint (str(already_submitted)+' flags already submitted', 'yellow')
+        cprint ('{} flags already submitted'.format(already_submitted), 'yellow')
         
     if own > 0:
-        cprint (str(own)+' flags are youre own', 'red') 
+        cprint ('{} flags are youre own'.format(own), 'red') 
 
     if no_such_flag > 0:
-        cprint (str(no_such_flag)+' no such flags', 'red')
+        cprint ('{} no such flags'.format(no_such_flag), 'red')
 
     if timeout > 0:
-        cprint (str(no_such_flag)+' timeout', 'red')
+        cprint ('{} timeout'.format(timeout), 'red')
 
     for service in services_down:
         cprint (service+'is down.', 'red')
@@ -140,10 +140,10 @@ def submit_flags(flaglist):
 def submit():
     start = time.time()
     flaglist = extractFlags("new")
-    if len(flaglist) > 0:
+    if flaglist:
         submit_flags(flaglist)
     else:
-        cprint ('No flags to submit', 'green')
+        cprint ('No flags to submit', 'yellow')
     print ""		
     end = time.time()
     if (end - start) < SUBMIT_INTERVAL:
