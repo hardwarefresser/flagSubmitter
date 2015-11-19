@@ -104,37 +104,37 @@ def submit_flags(flaglist):
                 updateFlag(flag, "unknown_error")
                 unknown_error.add(answer)
 
-        #print status message after each submission round
-        cprint (str(accepted)+' flags scored', 'green') 
+            #print status message after each submission round
+            cprint (str(accepted)+' flags scored', 'green') 
         
-        if later > 0:
-            cprint (str(later)+' flags to resubmit', 'yellow') 
+            if later > 0:
+                cprint (str(later)+' flags to resubmit', 'yellow') 
         
-        if too_old > 0:
-            cprint (str(too_old)+ ' flags are too old', 'yellow') 
+            if too_old > 0:
+                cprint (str(too_old)+ ' flags are too old', 'yellow') 
         
-        if already_submitted > 0:
-            cprint (str(already_submitted)+' flags already submitted', 'yellow')
+            if already_submitted > 0:
+                cprint (str(already_submitted)+' flags already submitted', 'yellow')
         
-        if own > 0:
-            cprint (str(own)+' flags are youre own', 'red') 
+            if own > 0:
+                cprint (str(own)+' flags are youre own', 'red') 
 
-        if no_such_flag > 0:
-            cprint (str(no_such_flag)+' no such flags', 'red')
+            if no_such_flag > 0:
+                cprint (str(no_such_flag)+' no such flags', 'red')
 
-        if timeout > 0:
-            cprint (str(no_such_flag)+' timeout', 'red')
+            if timeout > 0:
+                cprint (str(no_such_flag)+' timeout', 'red')
 
-        for service in services_down:
-            cprint (service+'is down.', 'red')
+            for service in services_down:
+                cprint (service+'is down.', 'red')
 
-        if len(unknown_error) > 0:
-            cprint ('Following unknown errors hace occoured:', 'red')
-            for error in unknown_error:
-                cprint ('  '+error, 'red')
+            if len(unknown_error) > 0:
+                cprint ('Following unknown errors hace occoured:', 'red')
+                for error in unknown_error:
+                    cprint ('  '+error, 'red')
 
-    except Exception as e:
-        cprint (e, 'red')
+        except Exception as e:
+            cprint (e, 'red')
     
     
 def submit():
