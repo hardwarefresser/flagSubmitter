@@ -6,6 +6,7 @@ Requierments flagger:
   * MySQL
   * MySQL Python
   * termcolor
+  * parallel
 
 use the wrapper only after checking the regex eg via `grep -o '\w\{31\}='`
 
