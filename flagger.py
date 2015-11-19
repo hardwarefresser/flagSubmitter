@@ -45,7 +45,10 @@ def insertFlag(flag, service):
         con.commit()
         con.close()
     except Exception as e:
-        cprint (e, 'red')
+	if e[0] == 1062:
+	    cprint ('Flag already exists in DB', 'red')
+	else:
+	    cprint (e, 'red')
 
 
 def submit_flags(flaglist):
@@ -138,6 +141,7 @@ def submit_flags(flaglist):
 
 
 def submit():
+    insertFlag("flag{b153cfa3903ff3bced87b4fe58cbf765940304a0}", "new")
     start = time.time()
     flaglist = extractFlags("new")
     if flaglist:
