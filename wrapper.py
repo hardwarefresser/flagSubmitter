@@ -17,6 +17,6 @@ try:
             print "wrapper.py <servicename> <flag>"
     else:
         insertFlag(sys.argv[2], sys.argv[1])
-
+	print "will insert flag "+sys.argv[2]
 except Exception as e:
     cprint (e, 'red')
