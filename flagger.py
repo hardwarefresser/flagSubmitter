@@ -40,13 +40,13 @@ def insertFlag(flag, service):
     try:
         con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
         cur = con.cursor()
-        cur.execute('INSERT INTO flags (flag, state, service) VALUES ("%s", "%s", "new");'
+        cur.execute('INSERT INTO flags (flag, service, state) VALUES ("%s", "%s", "new");'
                 % (flag, service))
         con.commit()
         con.close()
     except Exception as e:
 	if e[0] == 1062:
-	    cprint ('Flag already exists in DB', 'red')
+	    cprint ('Flag already exists in DB', 'yellow')
 	else:
 	    cprint (e, 'red')
 
