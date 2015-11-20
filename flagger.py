@@ -4,7 +4,7 @@ import telnetlib
 import time
 import MySQLdb as mdb
 
-DB_HOST = '172.17.0.7'
+DB_HOST = '172.17.0.1'
 USER = 'root'
 PASSWORD = 'toor'
 DB_NAME = 'flagDB'
@@ -40,7 +40,7 @@ def insertFlag(flag, service):
     try:
         con = mdb.connect(DB_HOST, USER, PASSWORD, DB_NAME)
         cur = con.cursor()
-        cur.execute('INSERT INTO flags (flag, state, service) VALUES ("%s", "%s", "new");'
+        cur.execute('INSERT INTO flags (flag, service, state) VALUES ("%s", "%s", "new");'
                 % (flag, service))
         con.commit()
         con.close()
