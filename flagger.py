@@ -4,7 +4,7 @@ import telnetlib
 import time
 import MySQLdb as mdb
 
-DB_HOST = '172.17.0.1'
+DB_HOST = '172.17.0.7'
 USER = 'root'
 PASSWORD = 'toor'
 DB_NAME = 'flagDB'

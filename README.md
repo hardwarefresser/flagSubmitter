@@ -15,7 +15,11 @@ quick and dirty attackframe work:
 Put everything in a while loop and let it run
 We need ro configure the timeout and parallelisation level og parallel
 
-`cat IP.txt | parallel python exploit.py | grep -o '\w\{31\}=' | parallel python wrapper.py SERVICENAME`
+`cat IP.txt | parallel -j128 --timeout 3 python exploit.py | grep -o '\w\{31\}=' | parallel python wrapper.py SERVICENAME`
+
+Parallel usage:
+  * `-j128` Number of parallel threads (128 in this case)
+  * `--timeout 3` Timeout for each thread in seconds (3 sec in this case)
 
 Breakdown of the attack framework:
   * `cat IP.txt` write IPs to stdout, best whould be to check which services are up in advance via scoreboard
