@@ -46,7 +46,7 @@ def insertFlag(flag, service):
         con.close()
     except Exception as e:
 	if e[0] == 1062:
-	    cprint ('Flag already exists in DB', 'red')
+	    cprint ('Flag already exists in DB', 'yellow')
 	else:
 	    cprint (e, 'red')
 
